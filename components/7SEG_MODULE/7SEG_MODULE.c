@@ -41,7 +41,33 @@ void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg
 	}	
 	for (uint8_t i = 0; i < display->numDigits; i++) {
 		gpio_set_direction(display->digitPins[i], GPIO_MODE_OUTPUT);
-		gpio_set_level(display->digitPins[i], display->isAnode ? 0 : 1);
+		gpio_set_level(display->digitPins[i], display->isAnode ? 0 : 1); //check for kathode or anode default LED
 	}
 
+}
+
+
+void display_setNumber(SevenSegment_t *display, long number) {
+	//need to separate the long number provided by the user and then save this numbers to the buffer displayBuffer[]
+	//check if the number is negative => show the number without the sign
+	if (number < 0) number = -number;	
+
+	for (uint8_t i = 0; i < display->numDigits; i++) {
+		display->displayBuffer[i] = number % 10;
+		number /= 10; //it's like the integer division so we don't care about the rest
+			      // number 328 --> displayBuffer[0] = 8; 
+			      // number 328 --> displayBuffer[1] = 2;
+			      // number 328 --> displayBuffer[2] = 3;
+	}
+
+
+} 
+
+void display_refresh(SevenSegment_t *display) {
+	//the main refreshing function that provides the multiplexing of our LED screen
+}
+
+void display_clear(SevenSegment_t *display) {
+	// the function for clearing current numbers on display
+	// it corresponds to first 
 }
