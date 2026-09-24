@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+
 typedef struct {
 	const uint8_t* segmentPins; // collection containing mapping segments of display to the each pin
 	const uint8_t* digitPins; // collection conating mapping numbers of display to the each pin
@@ -21,7 +22,6 @@ typedef struct {
 
 void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg, const uint8_t digPins[], uint8_t nDig, bool isAno);
 void display_setNumber(SevenSegment_t* display, long number);
-void display_clear(SevenSegment_t* display);
 void display_refresh(SevenSegment_t* display);
 
 

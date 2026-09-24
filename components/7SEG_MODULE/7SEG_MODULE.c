@@ -2,11 +2,18 @@
 
 #include "7SEG_MODULE.h"
 
+#include "esp_etm.h"
+#include "esp_rom_sys.h"
+
 #include "driver/gpio.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/idf_additions.h"
+#include "freertos/projdefs.h"
 
 #include "hal/gpio_types.h"
 
-static const uint8_t digitPatterns[] = {
+static const uint8_t digitPattern[] = {
 	0b00111111, // 0 its for the 0bGFEDCBA pattern, for default kathode controlled display, we can do it for anode via negation every bit
 	0b00000110, // 1
 	0b01011011, // 2
@@ -65,9 +72,27 @@ void display_setNumber(SevenSegment_t *display, long number) {
 
 void display_refresh(SevenSegment_t *display) {
 	//the main refreshing function that provides the multiplexing of our LED screen
+	for (uint8_t d = 0; d < display->numDigits; d++) {
+		for (uint8_t i = 0; i < display->numDigits; i++) {
+			gpio_set_level(display->digitPins[i], display->isAnode ? 0 : 1);
+		}
+
+		//Take the number from buffer:
+		uint8_t num = display->displayBuffer[d];
+		uint8_t mask = digitPattern[num];
+
+		for (uint8_t s = 0; s < display->numSegments; s++) {
+			uint8_t bit = (mask >> s) & 1;
+
+			gpio_set_level(display->segmentPins[s], display->isAnode ? !bit : bit);
+		}
+
+			gpio_set_level(display->digitPins[d], display->isAnode ? 1 : 0);
+			vTaskDelay(pdMS_TO_TICKS(10));
+	}	
 }
 
-void display_clear(SevenSegment_t *display) {
-	// the function for clearing current numbers on display
-	// it corresponds to first 
-}
+
+
+
+
