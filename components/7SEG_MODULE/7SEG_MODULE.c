@@ -59,18 +59,29 @@ void display_setNumber(SevenSegment_t *display, long number) {
 	//check if the number is negative => show the number without the sign
 	if (number < 0) number = -number;	
 
-	for (uint8_t i = 0; i < display->numDigits; i++) {
-		display->displayBuffer[i] = number % 10;
+	for (uint8_t actual_digit = 0; actual_digit < display->numDigits; actual_digit++) {
+
+	
+		display->displayBuffer[actual_digit] = number % 10;
 		number /= 10; //it's like the integer division so we don't care about the rest
-			      // number 328 --> displayBuffer[0] = 8; 
-			      // number 328 --> displayBuffer[1] = 2;
-			      // number 328 --> displayBuffer[2] = 3;
+			      	      // number 328 --> displayBuffer[0] = 8; 
+			      	      // number 328 --> displayBuffer[1] = 2;
+			      	      // number 328 --> displayBuffer[2] = 3;
+			
+		uint8_t num = display->displayBuffer[actual_digit];
+		uint8_t mask = digitPattern[num];
+		
+		for (uint8_t s = 0; s < display->numSegments; s++) {
+			uint8_t bit = (mask >> s) & 1;	
+			gpio_set_level(display->segmentPins[s], display->isAnode ? !bit : bit);
+		}
 	}
 
+	printf("Set all of the numbers correctly!");
 
 } 
 
-void display_refresh(SevenSegment_t *display) {
+void display_refresh(SevenSegment_t* display) {
 	//the main refreshing function that provides the multiplexing of our LED screen
 	for (uint8_t d = 0; d < display->numDigits; d++) {
 		for (uint8_t i = 0; i < display->numDigits; i++) {
@@ -87,9 +98,28 @@ void display_refresh(SevenSegment_t *display) {
 			gpio_set_level(display->segmentPins[s], display->isAnode ? !bit : bit);
 		}
 
-			gpio_set_level(display->digitPins[d], display->isAnode ? 1 : 0);
-			vTaskDelay(pdMS_TO_TICKS(10));
+		gpio_set_level(display->digitPins[d], display->isAnode ? 1 : 0);
+		vTaskDelay(pdMS_TO_TICKS(10));
 	}	
+}
+
+void display_worker(SevenSegment_t* display) {
+	//worker should only be the thing that displaying the number 		
+	//worker only cares about the multiplexing 
+	//worker should only turn off the previous digit, go to the next one and turn it on and repeat
+	
+		if (display->whatNumber == 0) {
+			gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 1 : 0);
+			display->whatNumber++;
+		} 
+		else {
+			gpio_set_level(display->digitPins[display->whatNumber - 1], display->isAnode ? 0 : 1);
+			gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 1 : 0);
+			display->whatNumber++;
+		}
+		
+	
+
 }
 
 
