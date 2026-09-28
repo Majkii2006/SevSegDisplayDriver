@@ -81,44 +81,20 @@ void display_setNumber(SevenSegment_t *display, long number) {
 
 } 
 
-void display_refresh(SevenSegment_t* display) {
-	//the main refreshing function that provides the multiplexing of our LED screen
-	for (uint8_t d = 0; d < display->numDigits; d++) {
-		for (uint8_t i = 0; i < display->numDigits; i++) {
-			gpio_set_level(display->digitPins[i], display->isAnode ? 0 : 1);
-		}
-
-		//Take the number from buffer:
-		uint8_t num = display->displayBuffer[d];
-		uint8_t mask = digitPattern[num];
-
-		for (uint8_t s = 0; s < display->numSegments; s++) {
-			uint8_t bit = (mask >> s) & 1;
-
-			gpio_set_level(display->segmentPins[s], display->isAnode ? !bit : bit);
-		}
-
-		gpio_set_level(display->digitPins[d], display->isAnode ? 1 : 0);
-		vTaskDelay(pdMS_TO_TICKS(10));
-	}	
-}
-
 void display_worker(SevenSegment_t* display) {
 	//worker should only be the thing that displaying the number 		
 	//worker only cares about the multiplexing 
 	//worker should only turn off the previous digit, go to the next one and turn it on and repeat
 	
-		if (display->whatNumber == 0) {
-			gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 1 : 0);
-			display->whatNumber++;
-		} 
-		else {
-			gpio_set_level(display->digitPins[display->whatNumber - 1], display->isAnode ? 0 : 1);
-			gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 1 : 0);
-			display->whatNumber++;
-		}
-		
+	uint8_t prev = (display->whatNumber == 0) ? display->numDigits - 1 : display->whatNumber - 1;	
+
+	gpio_set_level(display->digitPins[prev], display->isAnode ? 0 : 1);
+	gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 1 : 0);
 	
+	display->whatNumber++;
+	if (display->whatNumber >= display->numDigits) {
+		display->whatNumber = 0;	
+	}
 
 }
 
