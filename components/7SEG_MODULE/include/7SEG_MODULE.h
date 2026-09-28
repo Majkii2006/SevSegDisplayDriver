@@ -23,7 +23,6 @@ typedef struct {
 
 void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg, const uint8_t digPins[], uint8_t nDig, bool isAno);
 void display_setNumber(SevenSegment_t* display, long number);
-void display_refresh(SevenSegment_t* display);
 void display_worker(SevenSegment_t* display);
 
 
