@@ -17,7 +17,6 @@ typedef struct {
 	uint8_t numDigits; // how many digits have full display 
 	bool isAnode; // is the display controlled by shared anode or shared kathode 
 	uint8_t displayBuffer[MAX_DIGITS][MAX_SEGMENTS]; // the compile-time buffer for the concrete numbers from that main one that we would to show
-					   // for example -> 428 -> displayBuffer[0] = 4, displayBuffer[1] = 2, displayBuffer[2] = 8
 	uint8_t whatNumber;
 } SevenSegment_t;
 
