@@ -4,8 +4,8 @@
 #define SEG_MODULE_H
 
 #define MAX_DIGITS 8 //for the compile-time memory allocating on the stack so we need to know how much of memory we need
-                     // CHANGE THIS VALUE FOR THE OPERATIONS ON MORE THAN 8 SEGMENTS/DIGITS DISPLAY
-#define MAX_SEGMENTS 7
+                     // CHANGE THIS VALUE FOR THE OPERATIONS ON MORE THAN 8 DIGITS DISPLAY
+#define MAX_SEGMENTS 7 // CHANGE THIS VALUE FOR THE OPERATIONS ON MORE THAN 7 SEGMENTS
 
 #include <stdint.h>
 
@@ -23,7 +23,10 @@ typedef struct {
 
 void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg, const uint8_t digPins[], uint8_t nDig, bool isAno);
 void display_setNumber(SevenSegment_t* display, long number);
+void display_setTempUnit(SevenSegment_t* display, char unit);
 void display_worker(SevenSegment_t* display);
+
+
 
 
 

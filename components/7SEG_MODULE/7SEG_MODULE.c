@@ -1,6 +1,7 @@
 #include <sys/types.h>
 
 #include <stdint.h>
+#include <uchar.h>
 
 #include "7SEG_MODULE.h"
 
@@ -15,6 +16,8 @@
 
 #include "hal/gpio_types.h"
 
+#include "rom/rtc.h"
+
 static const uint8_t digitPattern[] = {
 	0b00111111, // 0 its for the 0b0GFEDCBA pattern, for default kathode controlled display 
 	0b00000110, // 1
@@ -26,6 +29,21 @@ static const uint8_t digitPattern[] = {
         0b00000111, // 7
 	0b01111111, // 8
 	0b01101111  // 9
+};
+
+
+static const uint8_t charPattern[] = {
+    ['A'] = 0b01110111,
+    ['b'] = 0b01111100,
+    ['C'] = 0b00111001,
+    ['d'] = 0b01011110,
+    ['E'] = 0b01111001,
+    ['F'] = 0b01110001,
+    ['H'] = 0b01110110,
+    ['L'] = 0b00111000,
+    ['P'] = 0b01110011,
+    ['U'] = 0b00111110,
+    ['@'] = 0b01100011
 };
 
 
@@ -58,7 +76,34 @@ void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg
 
 }
 
-void display_setNumber(SevenSegment_t *display, long number) {
+void display_setTempUnit(SevenSegment_t* display, char unit) {
+
+	for (int8_t actual_screen_index = (int8_t) display->numDigits - 1; actual_screen_index >= 0; actual_screen_index--) {
+		uint8_t mask_degree = charPattern['@'];
+
+		for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+			uint8_t bit = (mask_degree >> actual_segment) & 1;
+			display->displayBuffer[actual_screen_index][actual_segment] = bit;
+		}	
+
+		if (unit == 'C') {
+			uint8_t mask = charPattern['C'];
+			for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+				uint8_t bit = (mask >> actual_segment) & 1;
+				display->displayBuffer[actual_screen_index + 1][actual_segment] = bit;
+			}
+		}
+		else if (unit == 'F') {
+			uint8_t mask = charPattern['F'];
+			for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+				uint8_t bit = (mask >> actual_segment) & 1;
+				display->displayBuffer[actual_screen_index + 1][actual_segment] = bit;
+			}
+		}
+	}		
+}
+
+void display_setNumber(SevenSegment_t* display, long number) {
 	//need to separate the long number provided by the user and then save this numbers to the buffer displayBuffer[]
 	
 	//check if the number is negative => show the number without the sign
@@ -80,10 +125,11 @@ void display_setNumber(SevenSegment_t *display, long number) {
 } 
 
 
+
 // helper function for segments setting
 
 static inline void dpSetSegments(SevenSegment_t* display, uint8_t digitIndex) {
-	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++){
+	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
 		uint8_t bit = display->displayBuffer[digitIndex][actual_segment];
 		gpio_set_level(display->segmentPins[actual_segment], display->isAnode ? !bit : bit);
 	}
@@ -109,6 +155,8 @@ void display_worker(SevenSegment_t* display) {
 	}
 
 }
+
+
 
 
 
