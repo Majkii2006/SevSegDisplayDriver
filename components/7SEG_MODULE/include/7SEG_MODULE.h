@@ -18,12 +18,14 @@ typedef struct {
 	bool isAnode; // is the display controlled by shared anode or shared kathode 
 	uint8_t displayBuffer[MAX_DIGITS][MAX_SEGMENTS]; // the compile-time buffer for the concrete numbers from that main one that we would to show
 	uint8_t whatNumber;
+	bool isTemp;
+	uint8_t displayBufferChar[MAX_DIGITS][MAX_SEGMENTS];
 } SevenSegment_t;
 
 
 void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg, const uint8_t digPins[], uint8_t nDig, bool isAno);
 void display_setNumber(SevenSegment_t* display, long number);
-void display_setTempUnit(SevenSegment_t* display, char unit);
+void display_setTemp(SevenSegment_t* display, char unit);
 void display_worker(SevenSegment_t* display);
 
 
