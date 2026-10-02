@@ -36,6 +36,7 @@ static const uint8_t charPattern[] = {
     ['A'] = 0b01110111,
     ['b'] = 0b01111100,
     ['C'] = 0b00111001,
+    ['c'] = 0b01011000,
     ['d'] = 0b01011110,
     ['E'] = 0b01111001,
     ['F'] = 0b01110001,
@@ -76,10 +77,53 @@ void display_init(SevenSegment_t* display, const uint8_t segPins[], uint8_t nSeg
 
 }
 
+void display_setHumidityUnit(SevenSegment_t *display) {
+	if ( MAX_DIGITS < 2) {
+		return;
+	}
+
+	int8_t actual_screen_index = (int8_t) display->numDigits - 1;
+	uint8_t mask_P = charPattern['P'];
+	uint8_t mask_c = charPattern['c'];
+	
+	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+		uint8_t bit = (mask_P >> actual_segment) & 1;
+		display->displayBuffer[actual_screen_index - 1][actual_segment] = bit;
+	}
+
+	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+		uint8_t bit = (mask_c >> actual_segment) & 1;
+		display->displayBuffer[actual_screen_index][actual_segment] = bit;
+	}
+}
+
+
+
 void display_setTempUnit(SevenSegment_t* display, char unit) {
 
-	
+	for (int8_t actual_screen_index = (int8_t) display->numDigits - 1; actual_screen_index >= 0; actual_screen_index--) {
+		uint8_t mask_degree = charPattern['@']; // degree
 
+		for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+			uint8_t bit = (mask_degree >> actual_segment) & 1;
+			display->displayBuffer[actual_screen_index][actual_segment] = bit;
+		}	
+
+		if (unit == 'C') {
+			uint8_t mask = charPattern['C'];
+			for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+				uint8_t bit = (mask >> actual_segment) & 1;
+				display->displayBuffer[actual_screen_index + 1][actual_segment] = bit;
+			}
+		}
+		else if (unit == 'F') {
+			uint8_t mask = charPattern['F'];
+			for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
+				uint8_t bit = (mask >> actual_segment) & 1;
+				display->displayBuffer[actual_screen_index + 1][actual_segment] = bit;
+			}
+		}
+	}		
 }
 
 void display_setNumber(SevenSegment_t* display, long number) {
@@ -103,80 +147,27 @@ void display_setNumber(SevenSegment_t* display, long number) {
 
 } 
 
-void display_setTemp(SevenSegment_t* display, char unit) {
-
-	for (int8_t actual_screen_index = (int8_t) display->numDigits - 1; actual_screen_index >= 0; actual_screen_index--) {
-		uint8_t mask_degree = charPattern['@'];
-
-		for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
-			uint8_t bit = (mask_degree >> actual_segment) & 1;
-			display->displayBufferChar[actual_screen_index][actual_segment] = bit;
-		}
-
-		if (unit == 'C') {
-			uint8_t mask = charPattern['C'];
-			for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
-				uint8_t bit = (mask >> actual_segment) & 1;
-				display->displayBufferChar[actual_screen_index + 1][actual_segment] = bit;
-			}
-		}
-		else if (unit == 'F') {
-			uint8_t mask = charPattern['F'];
-			for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
-				uint8_t bit = (mask >> actual_segment) & 1;
-				display->displayBufferChar[actual_screen_index + 1][actual_segment] = bit;
-			}
-		}
-	}		
-}
-
 
 
 // helper function for segments setting
 
-static inline void dpSetSegmentsNums(SevenSegment_t* display, uint8_t digitIndex) {
+static inline void dpSetSegments(SevenSegment_t* display, uint8_t digitIndex) {
 	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
 		uint8_t bit = display->displayBuffer[digitIndex][actual_segment];
 		gpio_set_level(display->segmentPins[actual_segment], display->isAnode ? !bit : bit);
 	}
 }
 
-static inline void dpSetSegmentsChar(SevenSegment_t* display, uint8_t digitIndex) {
-	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
-		uint8_t bit = display->displayBufferChar[digitIndex][actual_segment];
-		gpio_set_level(display->segmentPins[actual_segment], display->isAnode ? !bit : bit);
-	}
-}
-
-
 void display_worker(SevenSegment_t* display) {
 	//worker should only be the thing that displaying the number 		
 	//worker only cares about the multiplexing 
 	
-	//show temperature
-	if (display->isTemp) {
-
-		for(uint8_t actual_number = 0; actual_number < display->numDigits; actual_number++) {
-			gpio_set_level(display->digitPins[actual_number], display->isAnode ? 1 : 0);
-		}	
-
-		dpSetSegmentsNums(display, display->whatNumber);
-		gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 0 : 1);
-		
-		dpSetSegmentsChar(display, display->whatNumber);
-		display->whatNumber++;
-
-		if (display->whatNumber >= display->numDigits) {
-			display->whatNumber = 0;	
-		}
-	}
-
-
+	//turn off whole screen on each cycle
 	for(uint8_t actual_number = 0; actual_number < display->numDigits; actual_number++) {
 		gpio_set_level(display->digitPins[actual_number], display->isAnode ? 1 : 0);
 	}	
 
-	dpSetSegmentsNums(display, display->whatNumber);
+	dpSetSegments(display, display->whatNumber);
 
 	gpio_set_level(display->digitPins[display->whatNumber], display->isAnode ? 0 : 1);
 	
