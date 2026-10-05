@@ -44,7 +44,9 @@ static const uint8_t charPattern[] = {
     ['L'] = 0b00111000,
     ['P'] = 0b01110011,
     ['U'] = 0b00111110,
-    ['@'] = 0b01100011
+    ['@'] = 0b01100011,
+    ['o'] = 0b01011100,
+    ['%'] = 0b01100011
 };
 
 
@@ -83,8 +85,8 @@ void display_setHumidityUnit(SevenSegment_t *display) {
 	}
 
 	int8_t actual_screen_index = (int8_t) display->numDigits - 1;
-	uint8_t mask_P = charPattern['P'];
-	uint8_t mask_c = charPattern['c'];
+	uint8_t mask_P = charPattern['%'];
+	uint8_t mask_c = charPattern['o'];
 	
 	for (uint8_t actual_segment = 0; actual_segment < display->numSegments; actual_segment++) {
 		uint8_t bit = (mask_P >> actual_segment) & 1;
