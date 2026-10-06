@@ -1,74 +1,54 @@
-# README IN PROGRESS...
+# 7SegLibrary
+---
 
-
-# 🎛️ DHT11 Monitor on ESP32
-  
-
+Simple lightweight library made in C language for controlling the 7 segment display.
 
 ---
 
-## Design Choices and Goals
+## Features
 
-I was inspired to do this project because of interesting in hardware tinkering mainly from software level.
-The main goal was to create the stable, memory safe and multitasking app for DHT11 sensor working with 7-segment display.
-For safely data transferring between the sensor and controller I'm using queues and tasks (via FreeRTOS).
-
-### The library for controlling the 7-segment display was also developed by me.
-
-https://github.com/Majkii2006/SevSegDisplayDriver
-
-
+- Optimized for microcontrollers.
+- Supports many digits.
+- Default anode or kathode handling.
+- Supports letters and numbers.
+- Different unit like: °C, °F, %, etc.
+- Constantly developing.
 
 ---
+## Supported devices
 
-## Showcase
-
-
-<img src="assets/1.jpg" width="49%" /> <img src="assets/2.jpg" width="49%" />
-
-Video on Youtube -> https://youtu.be/R9kOajqdzmk
+- Every ESP on Xtensa CPU
+- Every microcontroller using the ESP-IDF SDK
 
 ---
+## Setup and usage
 
-
-
-## Requirements
-
-- **OS:** Linux  
-  Developed and tested on Arch Linux
-
-- **Compiler:** GCC, xtensa-esp-elf-gcc
-
-- **Build system:** CMake
-
-- **Other Dependencies:** ESP-IDF by Espressif,
-                          7-Segment-Library Driver (https://github.com/Majkii2006/SevSegDisplayDriver)
+| API    | MEANING |
+| -------- | ------- |
+| display_init()  | Initialize display with specific parameters |
+| display_setNumber() | Using for setting the concrete number to the buffer |
+| display_setTempUnit()    | Setting the temperature unit on the display (°C, °F) |
+| display_setHumidityUnit()    | Setting the humidity unit on the display (%) |
+| display_worker()   | Main worker function for switching on and off the segments on the display |
 
 ---
+## Example for the 2 digit LED display
 
-## Clone and Build
+``` C
+SevenSegment_t display; // creating an instance of a main struct
 
-```bash
-git clone https://github.com/Majkii2006/DHT11-Monitoring && cd DHT-11-Monitoring
+const uint8_t segPins[] = { 14, 32, 33, 26, 25, 27, 22 }; // from A to G ordered
+const uint8_t digPins[] = { 19, 23 };
+
+display_init(&display, segPins, NUMBER_OF_SEGMENTS, digPins, NUMBER_OF_DIGITS, true); // last argument -> true = default anode controlled
+display_setNumber(&display, 25);
+
+while(1) {
+  display_worker(&display);
+}
+
 ```
-Then, activate the SDK from Espressif:
-
-```bash
-. $HOME/esp-idf/esp/export.sh
-```
-
-Then configure and build the project:
-
-```bash
-idf.py build
-```
-Finally, you can flash and monitor the ESP Module with builded project:
-```bash
-idf.py flash monitor
-```
----
   
 ## License
 
 Licensed under the Apache License, Version 2.0.  
-See the [LICENSE](LICENSE) and [NOTICE](NOTICE) files for details.
