@@ -38,7 +38,7 @@ Simple lightweight library made in C language for controlling the 7 segment disp
 SevenSegment_t display; // creating an instance of a main struct
 
 const uint8_t segPins[] = { 14, 32, 33, 26, 25, 27, 22 }; // from A to G ordered
-const uint8_t digPins[] = { 19, 23 };
+const uint8_t digPins[] = { 19, 23 }; // from left to right digits
 
 display_init(&display, segPins, NUMBER_OF_SEGMENTS, digPins, NUMBER_OF_DIGITS, true); // last argument -> true = default anode controlled
 display_setNumber(&display, 25);
